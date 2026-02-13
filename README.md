@@ -40,6 +40,62 @@ Add a new .mdx file to src/app/blog/posts or src/app/work/projects
 
 Magic Portfolio was built with [Once UI](https://once-ui.com) for [Next.js](https://nextjs.org). It requires Node.js v18.17+.
 
+## Page structure
+
+Magic Portfolio uses the [Next.js App Router](https://nextjs.org/docs/app). Each route maps to a folder inside `src/app/`, and the page displayed for that route is defined by the `page.tsx` file in the folder.
+
+```
+src/app/
+├── layout.tsx                  # Root layout (header, footer, route guard, global styles)
+├── page.tsx                    # Home page (/)
+├── not-found.tsx               # 404 page
+├── about/
+│   └── page.tsx                # /about
+├── work/
+│   ├── page.tsx                # /work (project listing)
+│   ├── [slug]/
+│   │   └── page.tsx            # /work/:slug (individual project)
+│   └── projects/               # MDX files for project content
+├── blog/
+│   ├── page.tsx                # /blog (blog listing)
+│   ├── [slug]/
+│   │   └── page.tsx            # /blog/:slug (individual blog post)
+│   └── posts/                  # MDX files for blog post content
+├── gallery/
+│   └── page.tsx                # /gallery
+├── robots.ts                   # robots.txt generation
+├── sitemap.ts                  # sitemap.xml generation
+└── api/                        # API routes (authentication, RSS, OG images)
+```
+
+### Route configuration
+
+Routes are enabled or disabled in `src/resources/once-ui.config.ts` through the `routes` object:
+
+```ts
+const routes: RoutesConfig = {
+  "/":        true,
+  "/about":   true,
+  "/work":    true,
+  "/blog":    true,
+  "/gallery": true,
+};
+```
+
+Setting a route to `false` hides it from the navigation header and renders a 404 when visited. The `RouteGuard` component in `src/components/RouteGuard.tsx` enforces this at runtime.
+
+### Password-protected routes
+
+Individual routes can be password-protected via the `protectedRoutes` object in the same config file. The password is set through an environment variable (see `.env.example`). Authentication is handled by the `/api/authenticate` and `/api/check-auth` API routes.
+
+### Dynamic routes
+
+Blog posts and work projects use [dynamic segments](https://nextjs.org/docs/app/building-your-application/routing/dynamic-routes) (`[slug]`). Each MDX file placed in `src/app/blog/posts/` or `src/app/work/projects/` automatically becomes a page. The slug is derived from the MDX filename, and `generateStaticParams()` in each dynamic page file pre-renders all slugs at build time.
+
+### Content and metadata
+
+Page content—titles, descriptions, bios, social links, and more—is centralized in `src/resources/content.tsx`. Every page imports from this file, so most text changes only require editing a single place.
+
 ## Documentation
 
 Docs available at: [docs.once-ui.com](https://docs.once-ui.com/docs/magic-portfolio/quick-start)
